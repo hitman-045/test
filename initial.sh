@@ -3,16 +3,21 @@
 # Package requirements: jenkins
 # Test for a reboot,  if this is a reboot just skip this script.
 #
-sudo apt install openjdk-8-jdk openjdk-8-jre
+sudo apt install openjdk-8-jdk-headless -y
+sudo apt install openjdk-8-jre-headless  -y
 java -version
-sudo cp /etc/profile /etc/profile_backup
-echo 'export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk' | sudo tee -a /etc/profile
-echo 'export JRE_HOME=/usr/lib/jvm/jre' | sudo tee -a /etc/profile
-source /etc/profile
+echo 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64' | sudo tee -a /etc/environment 
+echo 'export JRE_HOME=/usr/lib/jvm/jre' | sudo tee -a /etc/environment 
+source /etc/environment
 
+
+
+# Package requirements: jenkins
+# Test for a reboot,  if this is a reboot just skip this script.
+#
 if test "$RS_REBOOT" = "true" -o "$RS_ALREADY_RUN" = "true" ; then
   logger -t RightScale "Jenkins Install,  skipped on a reboot."
-  exit 0
+  exit 0 
 fi
 
 #Test for existing repository
@@ -21,9 +26,9 @@ jenkins_repo=`ls /etc/apt/sources.list.d/ -1 2>/dev/null | grep "jenkins$" | hea
 #test for file existance
 if test "$jenkins_repo" = "" ; then
   echo "Adding Jenkins repository: ${jenkins_repo}"
-  wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | apt-key add -
-  sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
-  apt-get update
+  wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add
+  sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+  apt-get update -y
   apt-get install -y jenkins
 fi
 fi
@@ -56,4 +61,3 @@ else
 fi
 
 service jenkins start
-                                              
